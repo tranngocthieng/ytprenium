@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trình phát Video YouTube</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            margin: 0;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 700px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background-color: #1e1e1e;
+            color: #fff;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: #ff0000;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            background-color: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #cc0000;
+        }
+
+        .video-container {
+            width: 100%;
+            max-width: 800px;
+            aspect-ratio: 16 / 9;
+            background-color: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            display: none; /* Ẩn khung khi chưa có video */
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .error {
+            color: #ff6b6b;
+            margin-bottom: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>YouTube prenium của Thing</h2>
+
+    <div class="input-group">
+        <input type="text" id="youtubeUrl" placeholder="Dán link YouTube vào đây (VD: https://www.youtube.com/watch?v=...)">
+        <button onclick="playVideo()">Phát ngay</button>
+    </div>
+
+    <div id="errorMsg" class="error">Link YouTube không hợp lệ. Vui lòng kiểm tra lại!</div>
+
+    <div class="video-container" id="videoContainer">
+        <iframe id="videoPlayer" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+    </div>
+
+    <script>
+        function extractVideoID(url) {
+            // Regex bắt ID cho link watch?v=, youtu.be/, embed/, shorts/
+            const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+            const match = url.match(regExp);
+            return match ? match[1] : null;
+        }
+
+        function playVideo() {
+            const urlInput = document.getElementById('youtubeUrl').value.trim();
+            const videoContainer = document.getElementById('videoContainer');
+            const videoPlayer = document.getElementById('videoPlayer');
+            const errorMsg = document.getElementById('errorMsg');
+
+            const videoId = extractVideoID(urlInput);
+
+            if (videoId) {
+                errorMsg.style.display = 'none';
+                videoContainer.style.display = 'block';
+                videoPlayer.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+            } else {
+                videoContainer.style.display = 'none';
+                videoPlayer.src = '';
+                errorMsg.style.display = 'block';
+            }
+        }
+
+        // Cho phép nhấn phím Enter để phát luôn
+        document.getElementById('youtubeUrl').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                playVideo();
+            }
+        });
+    </script>
+
+</body>
+</html>
