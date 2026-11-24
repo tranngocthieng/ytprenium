@@ -3,135 +3,504 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trình phát Video YouTube</title>
+    <title>YouTube Đề Xuất Thông Minh</title>
     <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: Arial, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 40px 20px;
-            margin: 0;
+            font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+            background-color: #0f0f0f;
+            color: #f1f1f1;
+            padding: 20px;
         }
-
-        h2 {
-            margin-bottom: 20px;
-        }
-
-        .input-group {
+        .header {
+            max-width: 1280px;
+            margin: 0 auto 24px auto;
             display: flex;
             gap: 10px;
-            width: 100%;
-            max-width: 700px;
-            margin-bottom: 20px;
+            align-items: center;
         }
-
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            color: #fff;
+            margin-right: 10px;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+        }
+        .logo span {
+            background-color: #ff0000;
+            padding: 2px 8px;
+            border-radius: 6px;
+            margin-right: 4px;
+        }
         input[type="text"] {
             flex: 1;
-            padding: 12px 15px;
-            font-size: 16px;
-            border: 1px solid #333;
-            border-radius: 6px;
-            background-color: #1e1e1e;
+            padding: 10px 16px;
+            font-size: 15px;
+            border: 1px solid #303030;
+            border-radius: 20px;
+            background-color: #121212;
             color: #fff;
             outline: none;
         }
-
-        input[type="text"]:focus {
-            border-color: #ff0000;
-        }
-
-        button {
-            padding: 12px 24px;
-            font-size: 16px;
-            font-weight: bold;
-            background-color: #ff0000;
+        input[type="text"]:focus { border-color: #3ea6ff; }
+        button.search-btn {
+            padding: 10px 22px;
+            font-size: 15px;
+            font-weight: 600;
+            background-color: #222;
             color: white;
-            border: none;
-            border-radius: 6px;
+            border: 1px solid #303030;
+            border-radius: 20px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            white-space: nowrap;
+        }
+        button.search-btn:hover { background-color: #333; }
+        .alert-box {
+            max-width: 1280px;
+            margin: -10px auto 16px auto;
+            padding: 10px 16px;
+            border-radius: 8px;
+            background-color: #2a1515;
+            color: #ff8080;
+            font-size: 14px;
+            display: none;
         }
 
-        button:hover {
-            background-color: #cc0000;
+        /* Giao diện lưới kết quả tìm kiếm / trang chủ */
+        .browse-section {
+            max-width: 1280px;
+            margin: 0 auto;
         }
-
-        .video-container {
+        .section-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .section-top h2 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .topic-badge {
+            font-size: 13px;
+            color: #3ea6ff;
+            font-weight: normal;
+            margin-left: 8px;
+        }
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .grid-card {
+            cursor: pointer;
+            border-radius: 10px;
+            transition: transform 0.15s;
+        }
+        .grid-card:hover { transform: translateY(-2px); }
+        .grid-thumb {
             width: 100%;
-            max-width: 800px;
             aspect-ratio: 16 / 9;
-            background-color: #000;
             border-radius: 10px;
             overflow: hidden;
-            display: none; /* Ẩn khung khi chưa có video */
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            background-color: #222;
+            margin-bottom: 10px;
         }
-
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
+        .grid-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .grid-title {
+            font-size: 15px;
+            font-weight: 600;
+            line-height: 1.35;
+            color: #f1f1f1;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 4px;
         }
+        .grid-channel { font-size: 13px; color: #aaaaaa; }
 
-        .error {
-            color: #ff6b6b;
-            margin-bottom: 15px;
+        /* Giao diện 2 cột khi đang phát video */
+        .watch-layout {
+            max-width: 1280px;
+            margin: 0 auto;
             display: none;
+            grid-template-columns: 1fr 380px;
+            gap: 24px;
+        }
+        .video-wrapper {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background-color: #000;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        iframe { width: 100%; height: 100%; border: none; }
+        .video-info { margin-top: 14px; }
+        .video-title { font-size: 20px; font-weight: 600; line-height: 1.4; margin-bottom: 6px; }
+        .video-channel { font-size: 14px; color: #aaaaaa; }
+
+        /* Cột đề xuất bên phải */
+        .sidebar { display: flex; flex-direction: column; gap: 12px; }
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .sidebar-header h3 { font-size: 16px; font-weight: 600; }
+        .clear-history-btn {
+            background: none;
+            border: 1px solid #303030;
+            color: #aaa;
+            font-size: 12px;
+            padding: 5px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+        .clear-history-btn:hover { color: #fff; border-color: #666; }
+        .suggest-item {
+            display: flex;
+            gap: 10px;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+        .suggest-item:hover { background-color: #272727; }
+        .thumb-box {
+            width: 160px;
+            aspect-ratio: 16 / 9;
+            border-radius: 8px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background-color: #222;
+        }
+        .thumb-box img { width: 100%; height: 100%; object-fit: cover; }
+        .item-meta { display: flex; flex-direction: column; overflow: hidden; }
+        .item-title {
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.3;
+            color: #f1f1f1;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+        .item-channel { font-size: 12px; color: #aaaaaa; }
+        .status-text { font-size: 14px; color: #888; text-align: center; padding: 30px 0; }
+
+        @media (max-width: 900px) {
+            .watch-layout { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-    <h2>YouTube prenium của Thing</h2>
-
-    <div class="input-group">
-        <input type="text" id="youtubeUrl" placeholder="Dán link YouTube vào đây (VD: https://www.youtube.com/watch?v=...)">
-        <button onclick="playVideo()">Phát ngay</button>
+    <div class="header">
+        <div class="logo" onclick="goHome()" title="Về trang chủ"><span>▶</span>YT của bố Thiêng</div>
+        <input type="text" id="searchInput" placeholder="Tìm kiếm video hoặc dán link YouTube...">
+        <button class="search-btn" onclick="handleSearchOrLink()">Tìm kiếm</button>
     </div>
 
-    <div id="errorMsg" class="error">Link YouTube không hợp lệ. Vui lòng kiểm tra lại!</div>
+    <div id="alertBox" class="alert-box"></div>
 
-    <div class="video-container" id="videoContainer">
-        <iframe id="videoPlayer" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+    <!-- Màn hình 1: Danh sách video (Trang chủ & Kết quả tìm kiếm) -->
+    <div id="browseSection" class="browse-section">
+        <div class="section-top">
+            <h2 id="browseHeading">Đề xuất cho bạn</h2>
+            <button class="clear-history-btn" onclick="resetAllHistory()">Đặt lại lịch sử & sở thích</button>
+        </div>
+        <div id="videoGrid" class="video-grid"></div>
+    </div>
+
+    <!-- Màn hình 2: Trình phát video & Cột đề xuất bên phải -->
+    <div id="watchLayout" class="watch-layout">
+        <div class="player-section">
+            <div class="video-wrapper">
+                <iframe id="videoPlayer" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+            </div>
+            <div class="video-info">
+                <div class="video-title" id="currentTitle"></div>
+                <div class="video-channel" id="currentChannel"></div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h3>Video chưa xem đề xuất</h3>
+                <button class="clear-history-btn" onclick="resetAllHistory()">Xóa lịch sử</button>
+            </div>
+            <div id="suggestList"></div>
+        </div>
     </div>
 
     <script>
+        // Danh sách 3 API Key tự động xoay vòng khi hết hạn mức
+        const API_KEYS = [
+            "AIzaSyAfEWwqHOSHSKmBvDz45Q5L9oRMFomp7s0",
+            "AIzaSyAwxsPKwJNXHHRaZLpU52quGEE-Bmw2RI8",
+            "AIzaSyBjfCw9I2bkoQhaUHHWIkdxt1WWo7AX2J0"
+        ];
+
+        const validKeys = API_KEYS.filter(k => k && !k.startsWith("DAN_KEY"));
+        let currentKeyIndex = 0;
+
+        // Bộ nhớ lưu ID video đã xem & các chủ đề/từ khóa người dùng quan tâm
+        let watchedIds = JSON.parse(localStorage.getItem('yt_watched_ids')) || [];
+        let interestHistory = JSON.parse(localStorage.getItem('yt_interest_history')) || [];
+
+        async function callYouTubeAPI(endpointUrlWithoutKey) {
+            if (validKeys.length === 0) {
+                throw new Error("Chưa cấu hình API Key hợp lệ.");
+            }
+
+            let attempts = 0;
+            while (attempts < validKeys.length) {
+                const activeKey = validKeys[currentKeyIndex];
+                const fullUrl = `${endpointUrlWithoutKey}&key=${activeKey}`;
+                const res = await fetch(fullUrl);
+                const data = await res.json();
+
+                if (!data.error) {
+                    return data;
+                }
+
+                const reason = data.error.errors?.[0]?.reason || "";
+                if (res.status === 403 || reason === "quotaExceeded" || reason === "dailyLimitExceeded") {
+                    console.warn(`Key số ${currentKeyIndex + 1} đã hết điểm, đang chuyển sang Key dự phòng...`);
+                    currentKeyIndex = (currentKeyIndex + 1) % validKeys.length;
+                    attempts++;
+                } else {
+                    throw new Error(data.error.message);
+                }
+            }
+
+            throw new Error("Tất cả 3 API Key đều đã hết hạn mức hôm nay. Hạn mức sẽ tự làm mới vào 14h-15h chiều mai.");
+        }
+
+        function decodeHtml(html) {
+            const txt = document.createElement("textarea");
+            txt.innerHTML = html;
+            return txt.value;
+        }
+
+        function showAlert(msg) {
+            const box = document.getElementById('alertBox');
+            box.innerText = msg;
+            box.style.display = msg ? 'block' : 'none';
+        }
+
         function extractVideoID(url) {
-            // Regex bắt ID cho link watch?v=, youtu.be/, embed/, shorts/
             const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
             const match = url.match(regExp);
             return match ? match[1] : null;
         }
 
-        function playVideo() {
-            const urlInput = document.getElementById('youtubeUrl').value.trim();
-            const videoContainer = document.getElementById('videoContainer');
-            const videoPlayer = document.getElementById('videoPlayer');
-            const errorMsg = document.getElementById('errorMsg');
-
-            const videoId = extractVideoID(urlInput);
-
-            if (videoId) {
-                errorMsg.style.display = 'none';
-                videoContainer.style.display = 'block';
-                videoPlayer.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-            } else {
-                videoContainer.style.display = 'none';
-                videoPlayer.src = '';
-                errorMsg.style.display = 'block';
+        function markAsWatched(videoId) {
+            if (!watchedIds.includes(videoId)) {
+                watchedIds.push(videoId);
+                localStorage.setItem('yt_watched_ids', JSON.stringify(watchedIds));
             }
         }
 
-        // Cho phép nhấn phím Enter để phát luôn
-        document.getElementById('youtubeUrl').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                playVideo();
-            }
-        });
-    </script>
+        // Lưu lại từ khóa tìm kiếm hoặc tiêu đề video vừa xem vào danh sách sở thích (tối đa 10 mục gần nhất)
+        function saveInterest(topic) {
+            if (!topic) return;
+            const cleanTopic = topic.trim();
+            if (!cleanTopic) return;
 
+            interestHistory = interestHistory.filter(item => item.toLowerCase() !== cleanTopic.toLowerCase());
+            interestHistory.unshift(cleanTopic);
+            if (interestHistory.length > 10) {
+                interestHistory = interestHistory.slice(0, 10);
+            }
+            localStorage.setItem('yt_interest_history', JSON.stringify(interestHistory));
+        }
+
+        function resetAllHistory() {
+            watchedIds = [];
+            interestHistory = [];
+            localStorage.removeItem('yt_watched_ids');
+            localStorage.removeItem('yt_interest_history');
+            alert("Đã đặt lại toàn bộ lịch sử xem và sở thích đề xuất!");
+            goHome();
+        }
+
+        function showBrowseView(headingHtml) {
+            document.getElementById('videoPlayer').src = '';
+            document.getElementById('watchLayout').style.display = 'none';
+            document.getElementById('browseSection').style.display = 'block';
+            document.getElementById('browseHeading').innerHTML = headingHtml;
+        }
+
+        function showWatchView() {
+            document.getElementById('browseSection').style.display = 'none';
+            document.getElementById('watchLayout').style.display = 'grid';
+        }
+
+        async function searchAndShowGrid(query, headingHtml, filterWatched = false) {
+            showBrowseView(headingHtml);
+            const grid = document.getElementById('videoGrid');
+            grid.innerHTML = '<div class="status-text">Đang tìm kiếm trên YouTube...</div>';
+
+            try {
+                const endpoint = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=24&q=${encodeURIComponent(query)}`;
+                const data = await callYouTubeAPI(endpoint);
+
+                showAlert("");
+                let items = data.items;
+                if (filterWatched) {
+                    items = items.filter(item => !watchedIds.includes(item.id.videoId));
+                }
+
+                grid.innerHTML = '';
+                if (items.length === 0) {
+                    grid.innerHTML = '<div class="status-text">Không tìm thấy video mới nào phù hợp. Hãy thử tìm từ khóa khác hoặc bấm "Đặt lại lịch sử".</div>';
+                    return;
+                }
+
+                items.forEach(item => {
+                    const vidId = item.id.videoId;
+                    const title = decodeHtml(item.snippet.title);
+                    const channel = decodeHtml(item.snippet.channelTitle);
+                    const thumb = item.snippet.thumbnails.medium.url;
+
+                    const card = document.createElement('div');
+                    card.className = 'grid-card';
+                    card.onclick = () => playVideo(vidId, title, channel, title);
+
+                    card.innerHTML = `
+                        <div class="grid-thumb">
+                            <img src="${thumb}" alt="thumbnail">
+                        </div>
+                        <div class="grid-title">${title}</div>
+                        <div class="grid-channel">${channel}</div>
+                    `;
+                    grid.appendChild(card);
+                });
+            } catch (err) {
+                showAlert(err.message);
+                grid.innerHTML = '';
+            }
+        }
+
+        async function fetchSidebarSuggestions(query) {
+            const listContainer = document.getElementById('suggestList');
+            listContainer.innerHTML = '<div class="status-text">Đang tải đề xuất chưa xem...</div>';
+
+            try {
+                const endpoint = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=25&q=${encodeURIComponent(query)}`;
+                const data = await callYouTubeAPI(endpoint);
+
+                const unwatchedVideos = data.items.filter(item => !watchedIds.includes(item.id.videoId));
+                listContainer.innerHTML = '';
+
+                if (unwatchedVideos.length === 0) {
+                    listContainer.innerHTML = '<div class="status-text">Bạn đã xem hết chủ đề này!</div>';
+                    return;
+                }
+
+                unwatchedVideos.slice(0, 12).forEach(item => {
+                    const vidId = item.id.videoId;
+                    const title = decodeHtml(item.snippet.title);
+                    const channel = decodeHtml(item.snippet.channelTitle);
+                    const thumb = item.snippet.thumbnails.medium.url;
+
+                    const div = document.createElement('div');
+                    div.className = 'suggest-item';
+                    div.onclick = () => playVideo(vidId, title, channel, title);
+
+                    div.innerHTML = `
+                        <div class="thumb-box">
+                            <img src="${thumb}" alt="thumbnail">
+                        </div>
+                        <div class="item-meta">
+                            <div class="item-title">${title}</div>
+                            <div class="item-channel">${channel}</div>
+                        </div>
+                    `;
+                    listContainer.appendChild(div);
+                });
+            } catch (err) {
+                showAlert(err.message);
+                listContainer.innerHTML = '';
+            }
+        }
+
+        function playVideo(videoId, title, channel, relatedQuery) {
+            markAsWatched(videoId);
+            saveInterest(title); // Ghi nhớ video vừa xem vào sở thích cá nhân
+            showWatchView();
+
+            document.getElementById('videoPlayer').src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+            document.getElementById('currentTitle').innerText = title;
+            document.getElementById('currentChannel').innerText = channel;
+
+            fetchSidebarSuggestions(relatedQuery || title);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function fetchSingleVideoAndPlay(videoId) {
+            try {
+                const endpoint = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}`;
+                const data = await callYouTubeAPI(endpoint);
+                if (data.items && data.items.length > 0) {
+                    const snippet = data.items[0].snippet;
+                    const cleanTitle = decodeHtml(snippet.title);
+                    const cleanChannel = decodeHtml(snippet.channelTitle);
+                    playVideo(videoId, cleanTitle, cleanChannel, cleanTitle);
+                } else {
+                    showAlert("Không tìm thấy video này trên YouTube.");
+                }
+            } catch (e) {
+                playVideo(videoId, "Video YouTube", "YouTube", "nhạc trẻ hay nhất");
+            }
+        }
+
+        async function handleSearchOrLink() {
+            const rawInput = document.getElementById('searchInput').value.trim();
+            if (!rawInput) return;
+
+            const videoId = extractVideoID(rawInput);
+            if (videoId) {
+                await fetchSingleVideoAndPlay(videoId);
+            } else {
+                saveInterest(rawInput); // Ghi nhớ từ khóa tìm kiếm vào sở thích cá nhân
+                searchAndShowGrid(rawInput, `Kết quả tìm kiếm cho: "${rawInput}"`, false);
+            }
+        }
+
+        function goHome() {
+            document.getElementById('searchInput').value = '';
+
+            if (interestHistory.length > 0) {
+                // Chọn ngẫu nhiên 1 trong 4 chủ đề/video gần nhất bạn vừa xem hoặc tìm kiếm
+                const recentPool = interestHistory.slice(0, 4);
+                const chosenTopic = recentPool[Math.floor(Math.random() * recentPool.length)];
+                searchAndShowGrid(
+                    chosenTopic,
+                    `Đề xuất dành riêng cho bạn <span class="topic-badge">(Theo gu gần đây: "${chosenTopic}")</span>`,
+                    true
+                );
+            } else {
+                // Lần đầu tiên mở web (chưa có lịch sử)
+                searchAndShowGrid("nhạc hot tiktok", "Đề xuất phổ biến cho bạn", true);
+            }
+        }
+
+        document.getElementById('searchInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') handleSearchOrLink();
+        });
+
+        window.onload = () => {
+            goHome();
+        };
+    </script>
 </body>
 </html>
