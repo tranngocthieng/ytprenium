@@ -2,42 +2,51 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>YouTube Đề Xuất Thông Minh</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
+        html, body {
+            width: 100%;
+            overflow-x: hidden;
             font-family: 'Segoe UI', Roboto, Arial, sans-serif;
             background-color: #0f0f0f;
             color: #f1f1f1;
-            padding: 20px;
         }
+        body {
+            padding: 16px 20px;
+        }
+
+        /* Thanh tìm kiếm trên cùng */
         .header {
             max-width: 1280px;
-            margin: 0 auto 24px auto;
+            margin: 0 auto 20px auto;
             display: flex;
-            gap: 10px;
+            gap: 8px;
             align-items: center;
+            width: 100%;
         }
         .logo {
-            font-size: 20px;
+            font-size: 19px;
             font-weight: bold;
             color: #fff;
-            margin-right: 10px;
             white-space: nowrap;
             cursor: pointer;
             user-select: none;
+            flex-shrink: 0;
         }
         .logo span {
             background-color: #ff0000;
-            padding: 2px 8px;
+            padding: 2px 7px;
             border-radius: 6px;
             margin-right: 4px;
         }
         input[type="text"] {
             flex: 1;
-            padding: 10px 16px;
-            font-size: 15px;
+            min-width: 0; /* Chống tràn màn hình trên điện thoại */
+            width: 100%;
+            padding: 9px 14px;
+            font-size: 16px; /* Cỡ 16px giúp iPhone không tự phóng to màn hình khi bấm vào */
             border: 1px solid #303030;
             border-radius: 20px;
             background-color: #121212;
@@ -46,8 +55,8 @@
         }
         input[type="text"]:focus { border-color: #3ea6ff; }
         button.search-btn {
-            padding: 10px 22px;
-            font-size: 15px;
+            padding: 9px 16px;
+            font-size: 14px;
             font-weight: 600;
             background-color: #222;
             color: white;
@@ -55,62 +64,67 @@
             border-radius: 20px;
             cursor: pointer;
             white-space: nowrap;
+            flex-shrink: 0;
         }
         button.search-btn:hover { background-color: #333; }
+
         .alert-box {
             max-width: 1280px;
-            margin: -10px auto 16px auto;
-            padding: 10px 16px;
+            margin: 0 auto 16px auto;
+            padding: 10px 14px;
             border-radius: 8px;
             background-color: #2a1515;
             color: #ff8080;
             font-size: 14px;
             display: none;
+            word-break: break-word;
         }
 
         /* Giao diện lưới kết quả tìm kiếm / trang chủ */
         .browse-section {
             max-width: 1280px;
             margin: 0 auto;
+            width: 100%;
         }
         .section-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
             gap: 10px;
             flex-wrap: wrap;
         }
         .section-top h2 {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 600;
+            line-height: 1.3;
         }
         .topic-badge {
-            font-size: 13px;
+            display: inline-block;
+            font-size: 12px;
             color: #3ea6ff;
             font-weight: normal;
-            margin-left: 8px;
         }
         .video-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 18px;
+            width: 100%;
         }
         .grid-card {
             cursor: pointer;
             border-radius: 10px;
-            transition: transform 0.15s;
+            min-width: 0;
         }
-        .grid-card:hover { transform: translateY(-2px); }
         .grid-thumb {
             width: 100%;
             aspect-ratio: 16 / 9;
             border-radius: 10px;
             overflow: hidden;
             background-color: #222;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
-        .grid-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .grid-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .grid-title {
             font-size: 15px;
             font-weight: 600;
@@ -121,6 +135,7 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
             margin-bottom: 4px;
+            word-break: break-word;
         }
         .grid-channel { font-size: 13px; color: #aaaaaa; }
 
@@ -129,8 +144,13 @@
             max-width: 1280px;
             margin: 0 auto;
             display: none;
-            grid-template-columns: 1fr 380px;
+            grid-template-columns: minmax(0, 1fr) 380px;
             gap: 24px;
+            width: 100%;
+        }
+        .player-section {
+            min-width: 0;
+            width: 100%;
         }
         .video-wrapper {
             width: 100%;
@@ -139,17 +159,30 @@
             border-radius: 12px;
             overflow: hidden;
         }
-        iframe { width: 100%; height: 100%; border: none; }
-        .video-info { margin-top: 14px; }
-        .video-title { font-size: 20px; font-weight: 600; line-height: 1.4; margin-bottom: 6px; }
+        iframe { width: 100%; height: 100%; border: none; display: block; }
+        .video-info { margin-top: 12px; }
+        .video-title {
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-bottom: 6px;
+            word-break: break-word;
+        }
         .video-channel { font-size: 14px; color: #aaaaaa; }
 
-        /* Cột đề xuất bên phải */
-        .sidebar { display: flex; flex-direction: column; gap: 12px; }
+        /* Cột đề xuất bên phải (hoặc bên dưới trên điện thoại) */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-width: 0;
+            width: 100%;
+        }
         .sidebar-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 8px;
         }
         .sidebar-header h3 { font-size: 16px; font-weight: 600; }
         .clear-history-btn {
@@ -157,30 +190,40 @@
             border: 1px solid #303030;
             color: #aaa;
             font-size: 12px;
-            padding: 5px 12px;
+            padding: 5px 10px;
             border-radius: 12px;
             cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
         .clear-history-btn:hover { color: #fff; border-color: #666; }
         .suggest-item {
             display: flex;
             gap: 10px;
             cursor: pointer;
-            padding: 6px;
+            padding: 4px;
             border-radius: 8px;
             transition: background-color 0.2s;
+            width: 100%;
+            min-width: 0;
         }
         .suggest-item:hover { background-color: #272727; }
         .thumb-box {
-            width: 160px;
+            width: 155px;
             aspect-ratio: 16 / 9;
             border-radius: 8px;
             overflow: hidden;
             flex-shrink: 0;
             background-color: #222;
         }
-        .thumb-box img { width: 100%; height: 100%; object-fit: cover; }
-        .item-meta { display: flex; flex-direction: column; overflow: hidden; }
+        .thumb-box img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .item-meta {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex: 1;
+            min-width: 0;
+        }
         .item-title {
             font-size: 14px;
             font-weight: 500;
@@ -191,21 +234,76 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
             margin-bottom: 4px;
+            word-break: break-word;
         }
-        .item-channel { font-size: 12px; color: #aaaaaa; }
-        .status-text { font-size: 14px; color: #888; text-align: center; padding: 30px 0; }
+        .item-channel {
+            font-size: 12px;
+            color: #aaaaaa;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .status-text { font-size: 14px; color: #888; text-align: center; padding: 30px 10px; }
 
+        /* TỐI ƯU RIÊNG CHO MÀN HÌNH ĐIỆN THOẠI & TABLET */
         @media (max-width: 900px) {
-            .watch-layout { grid-template-columns: 1fr; }
+            .watch-layout {
+                grid-template-columns: minmax(0, 1fr);
+                gap: 18px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px 12px;
+            }
+            .header {
+                margin-bottom: 14px;
+                gap: 6px;
+            }
+            .logo {
+                font-size: 16px;
+            }
+            .logo span {
+                padding: 2px 6px;
+                margin-right: 2px;
+            }
+            input[type="text"] {
+                padding: 8px 12px;
+            }
+            button.search-btn {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+            .video-grid {
+                grid-template-columns: minmax(0, 1fr);
+                gap: 16px;
+            }
+            /* Khung phát video tràn viền giống app YouTube trên điện thoại */
+            .video-wrapper {
+                width: calc(100% + 24px);
+                margin-left: -12px;
+                border-radius: 0;
+            }
+            .video-title {
+                font-size: 16px;
+            }
+            .thumb-box {
+                width: 135px;
+            }
+            .sidebar {
+                border-top: 1px solid #222;
+                padding-top: 14px;
+            }
         }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div class="logo" onclick="goHome()" title="Về trang chủ"><span>▶</span>YT của bố Thiêng</div>
-        <input type="text" id="searchInput" placeholder="Tìm kiếm video hoặc dán link YouTube...">
-        <button class="search-btn" onclick="handleSearchOrLink()">Tìm kiếm</button>
+        <div class="logo" onclick="goHome()" title="Về trang chủ"><span>▶</span>Tube</div>
+        <input type="text" id="searchInput" placeholder="Tìm video hoặc dán link...">
+        <button class="search-btn" onclick="handleSearchOrLink()">Tìm</button>
     </div>
 
     <div id="alertBox" class="alert-box"></div>
@@ -214,12 +312,12 @@
     <div id="browseSection" class="browse-section">
         <div class="section-top">
             <h2 id="browseHeading">Đề xuất cho bạn</h2>
-            <button class="clear-history-btn" onclick="resetAllHistory()">Đặt lại lịch sử & sở thích</button>
+            <button class="clear-history-btn" onclick="resetAllHistory()">Đặt lại lịch sử</button>
         </div>
         <div id="videoGrid" class="video-grid"></div>
     </div>
 
-    <!-- Màn hình 2: Trình phát video & Cột đề xuất bên phải -->
+    <!-- Màn hình 2: Trình phát video & Cột đề xuất -->
     <div id="watchLayout" class="watch-layout">
         <div class="player-section">
             <div class="video-wrapper">
@@ -251,7 +349,6 @@
         const validKeys = API_KEYS.filter(k => k && !k.startsWith("DAN_KEY"));
         let currentKeyIndex = 0;
 
-        // Bộ nhớ lưu ID video đã xem & các chủ đề/từ khóa người dùng quan tâm
         let watchedIds = JSON.parse(localStorage.getItem('yt_watched_ids')) || [];
         let interestHistory = JSON.parse(localStorage.getItem('yt_interest_history')) || [];
 
@@ -273,7 +370,6 @@
 
                 const reason = data.error.errors?.[0]?.reason || "";
                 if (res.status === 403 || reason === "quotaExceeded" || reason === "dailyLimitExceeded") {
-                    console.warn(`Key số ${currentKeyIndex + 1} đã hết điểm, đang chuyển sang Key dự phòng...`);
                     currentKeyIndex = (currentKeyIndex + 1) % validKeys.length;
                     attempts++;
                 } else {
@@ -309,7 +405,6 @@
             }
         }
 
-        // Lưu lại từ khóa tìm kiếm hoặc tiêu đề video vừa xem vào danh sách sở thích (tối đa 10 mục gần nhất)
         function saveInterest(topic) {
             if (!topic) return;
             const cleanTopic = topic.trim();
@@ -435,7 +530,7 @@
 
         function playVideo(videoId, title, channel, relatedQuery) {
             markAsWatched(videoId);
-            saveInterest(title); // Ghi nhớ video vừa xem vào sở thích cá nhân
+            saveInterest(title);
             showWatchView();
 
             document.getElementById('videoPlayer').src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
@@ -471,8 +566,8 @@
             if (videoId) {
                 await fetchSingleVideoAndPlay(videoId);
             } else {
-                saveInterest(rawInput); // Ghi nhớ từ khóa tìm kiếm vào sở thích cá nhân
-                searchAndShowGrid(rawInput, `Kết quả tìm kiếm cho: "${rawInput}"`, false);
+                saveInterest(rawInput);
+                searchAndShowGrid(rawInput, `Kết quả cho: "${rawInput}"`, false);
             }
         }
 
@@ -480,17 +575,15 @@
             document.getElementById('searchInput').value = '';
 
             if (interestHistory.length > 0) {
-                // Chọn ngẫu nhiên 1 trong 4 chủ đề/video gần nhất bạn vừa xem hoặc tìm kiếm
                 const recentPool = interestHistory.slice(0, 4);
                 const chosenTopic = recentPool[Math.floor(Math.random() * recentPool.length)];
                 searchAndShowGrid(
                     chosenTopic,
-                    `Đề xuất dành riêng cho bạn <span class="topic-badge">(Theo gu gần đây: "${chosenTopic}")</span>`,
+                    `Đề xuất cho bạn <span class="topic-badge">(Theo gu: "${chosenTopic}")</span>`,
                     true
                 );
             } else {
-                // Lần đầu tiên mở web (chưa có lịch sử)
-                searchAndShowGrid("nhạc hot tiktok", "Đề xuất phổ biến cho bạn", true);
+                searchAndShowGrid("nhạc trẻ hay nhất hiện nay", "Đề xuất phổ biến cho bạn", true);
             }
         }
 
